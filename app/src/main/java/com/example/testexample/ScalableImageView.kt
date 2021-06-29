@@ -10,7 +10,6 @@ import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.View
 import android.widget.OverScroller
-import androidx.core.animation.doOnEnd
 import androidx.core.view.GestureDetectorCompat
 import dp
 import getBitmap
@@ -33,21 +32,23 @@ class ScalableImageView(context: Context?, attrs: AttributeSet?) : View(context,
     private val henScaleGestureListener = HenScaleGestureListener()
     private val gestureDetector = GestureDetectorCompat(context,this)
     private val scaleGestureDetector = ScaleGestureDetector(context,henScaleGestureListener)
-    private var scaleFraction = 0f
+    private var currentScale = 0f
         set(value) {
             field = value
             invalidate()
         }
 
-    private val scaleAnimator : ObjectAnimator by lazy {
-        ObjectAnimator.ofFloat(this,"scaleFraction",0f,1f)
-    }
+    private val scaleAnimator : ObjectAnimator = ObjectAnimator.ofFloat(this,"currentScale",smallScale,bigScale)
+
 
     private val scroller = OverScroller(context)
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-//        return gestureDetector.onTouchEvent(event)
-        return scaleGestureDetector.onTouchEvent(event)
+        val result =  scaleGestureDetector.onTouchEvent(event)
+        if(!scaleGestureDetector.isInProgress){
+            gestureDetector.onTouchEvent(event)
+        }
+        return result
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -64,12 +65,15 @@ class ScalableImageView(context: Context?, attrs: AttributeSet?) : View(context,
             smallScale = height / bitmap.height.toFloat()
             bigScale = width / bitmap.width.toFloat() * EXTRA_SCALE_FRACTION
         }
+
+        currentScale = smallScale
+        scaleAnimator.setFloatValues(smallScale,bigScale)
     }
 
     override fun onDraw(canvas: Canvas) {
+        var scaleFraction = (currentScale - smallScale) / (bigScale - smallScale)
         canvas.translate(offsetX * scaleFraction,offsetY  * scaleFraction)
-        var scale = smallScale + (bigScale - smallScale) * scaleFraction
-        canvas.scale(scale,scale,width /2f,height /2f)
+        canvas.scale(currentScale,currentScale,width /2f,height /2f)
         canvas.drawBitmap(bitmap,originalOffsetX ,originalOffsetY,paint)
     }
 
@@ -162,10 +166,20 @@ class ScalableImageView(context: Context?, attrs: AttributeSet?) : View(context,
     inner class HenScaleGestureListener : ScaleGestureDetector.OnScaleGestureListener{
 
         override fun onScale(detector: ScaleGestureDetector): Boolean {
+            // 判断撑开的时候是否是超界了，如果超界了就保留上一次的比例
+            val tem = currentScale * detector.scaleFactor
+            if(tem < smallScale || tem > bigScale){
+                return false
+            }
+            currentScale *= detector.scaleFactor
+            currentScale = currentScale.coerceAtLeast(smallScale).coerceAtMost(bigScale)
            return true
         }
 
         override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+            offsetX = (detector.focusX - width / 2) * ( 1 - bigScale / smallScale)
+            offsetY = (detector.focusY - height / 2) * ( 1 - bigScale / smallScale)
+            fixOffset()
            return true
         }
 
