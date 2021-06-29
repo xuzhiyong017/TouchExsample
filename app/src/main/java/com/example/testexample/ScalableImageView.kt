@@ -32,7 +32,7 @@ class ScalableImageView(context: Context?, attrs: AttributeSet?) : View(context,
     private var big = false
     private val henScaleGestureListener = HenScaleGestureListener()
     private val gestureDetector = GestureDetectorCompat(context,this)
-    private val scaleGestureDetector = ScaleGestureDetector(this,henScaleGestureListener)
+    private val scaleGestureDetector = ScaleGestureDetector(context,henScaleGestureListener)
     private var scaleFraction = 0f
         set(value) {
             field = value
