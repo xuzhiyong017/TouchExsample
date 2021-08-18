@@ -4,8 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,5 +45,15 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this,"dianji",Toast.LENGTH_SHORT).show();
             }
         });*/
+
+        RelativeLayout layout = findViewById(R.id.container);
+        final StickerView stickerView = new StickerView(this);
+        stickerView.setText("where is I", 2);
+        stickerView.setTextColor(Color.BLUE);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        layoutParams.addRule(RelativeLayout.CENTER_IN_PARENT);
+        TextView textView = new TextView(this);
+        textView.setText("23424");
+        layout.addView(stickerView, layoutParams);
     }
 }

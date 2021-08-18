@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TestExample</string>
+    <string name="camera_sticker_input_hint">单击输入</string>
 </resources>
